@@ -49,7 +49,7 @@
 @set werl="%bindir%\werl.exe"
 @set erl_exe="%bindir%\erl.exe"
 @set nodetool="%rel_root_dir%\bin\nodetool"
-@set cuttlefish="%rel_root_dir%\bin\cuttlefish"
+@set vm_args="-args_file %etc_dir%\vm.args"
 
 :: Extract node name from emqx.conf
 @for /f "usebackq delims=\= tokens=2" %%I in (`findstr /b node\.name "%emqx_conf%"`) do @(
@@ -130,24 +130,6 @@
 )
 @goto :eof
 
-:create_mnesia_dir
-@set create_dir_cmd=%escript% %nodetool% mnesia_dir %data_dir%\mnesia %node_name%
-@for /f "delims=" %%Z in ('%%create_dir_cmd%%') do @(
-  set mnesia_dir=%%Z
-)
-@goto :eof
-
-:generate_app_config
-@set mergeconf_cmd=%escript% %nodetool% mergeconf %etc_dir%\emqx.conf %etc_dir%\plugins %data_dir%\configs
-@for /f %%Z in ('%%mergeconf_cmd%%') do @(
-  set merged_app_conf=%%Z
-)
-@set gen_config_cmd=%escript% %cuttlefish% -s %rel_dir%\schema -c %merged_app_conf% -d %data_dir%\configs generate
-@for /f "delims=" %%A in ('%%gen_config_cmd%%') do @(
-  set generated_config_args=%%A
-)
-@goto :eof
-
 :: set boot_script variable
 :set_boot_script_var
 @if exist "%rel_dir%\%rel_name%.boot" (
@@ -180,7 +162,7 @@
   :: Install the service
   set args=%erl_opts% -setcookie %node_cookie% ++ -rootdir \"%rootdir%\"
   set start_erl=%erts_dir%\bin\start_erl.exe
-  set description=EMQ-2.0 node %node_name% in %rootdir%
+  set description=EMQ-3.1 node %node_name% in %rootdir%
   %erlsrv% add %service_name% %node_type% "%node_name%" -c "%description%" ^
            -w "%rootdir%" -m "%start_erl%" -args "%args%" ^
            -stopaction "init:stop()."
@@ -200,13 +182,10 @@
 :start
 :: window service?
 :: @%erlsrv% start %service_name%
-@call :create_mnesia_dir
-@call :generate_app_config
-@set args=-detached %sys_config% %args_file% %generated_config_args% -mnesia dir '%mnesia_dir%'
 @echo off
 cd /d %rel_root_dir%
 @echo on
-@start "%rel_name%" %werl% -boot "%boot_script%" %args%
+@start "%rel_name%" %werl% -boot "%boot_script%" -detached "%sys_config%" "%vm_args%"
 @goto :eof
 
 :: Stop the Windows service
@@ -230,13 +209,10 @@ cd /d %rel_root_dir%
 
 :: Start a console
 :console
-@call :create_mnesia_dir
-@call :generate_app_config
-@set args=%sys_config% %args_file% %generated_config_args% -mnesia dir '%mnesia_dir%'
 @echo off
 cd /d %rel_root_dir%
 @echo on
-@start "bin\%rel_name% console" %werl% -boot "%boot_script%" %args%
+@start "bin\%rel_name% console" %werl% -boot "%boot_script%" "%sys_config%" "%vm_args%"
 @goto :eof
 
 :: Ping the running node
