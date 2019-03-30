@@ -185,7 +185,7 @@
 @echo off
 cd /d %rel_root_dir%
 @echo on
-@start "%rel_name%" %werl% -boot "%boot_script%" -detached "%sys_config%" "%vm_args%"
+@start "%rel_name%" %werl% -boot "%boot_script%" -detached "-args_file etc/vm.args"
 @goto :eof
 
 :: Stop the Windows service
@@ -212,7 +212,7 @@ cd /d %rel_root_dir%
 @echo off
 cd /d %rel_root_dir%
 @echo on
-@start "bin\%rel_name% console" %werl% -boot "%boot_script%" "%sys_config%" "%vm_args%"
+@start "bin\%rel_name% console" %werl% -boot "%boot_script%" "-args_file etc/vm.args"
 @goto :eof
 
 :: Ping the running node
@@ -236,4 +236,3 @@ cd /d %rel_root_dir%
 :set_trim
 @set %1=%2
 @goto :eof
-
