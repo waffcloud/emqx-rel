@@ -50,7 +50,6 @@
 @set werl="%bindir%\werl.exe"
 @set erl_exe="%bindir%\erl.exe"
 @set nodetool="%rel_root_dir%\bin\nodetool"
-@set vm_args="-args_file %etc_dir%\vm.args"
 
 :: Extract node name from emqx.conf
 @for /f "usebackq delims=\= tokens=2" %%I in (`findstr /b node\.name "%emqx_conf%"`) do @(
@@ -185,7 +184,8 @@ sc delete %service_name%
 @echo off
 cd /d %rel_root_dir%
 @echo on
-@start "%rel_name%" %werl% -boot "%boot_script%" -detached "-args_file etc/vm.args"
+@set vm_args="-args_file etc/vm.args"
+@start "%rel_name%" %werl% -boot "%boot_script%" -detached "%vm_args%"
 @goto :eof
 
 :: Stop the Windows service
@@ -212,7 +212,8 @@ cd /d %rel_root_dir%
 @echo off
 cd /d %rel_root_dir%
 @echo on
-@start "bin\%rel_name% console" %werl% -boot "%boot_script%" "-args_file etc/vm.args"
+@set vm_args="-args_file etc/vm.args"
+@start "bin\%rel_name% console" %werl% -boot "%boot_script%" "%vm_args%"
 @goto :eof
 
 :: Ping the running node
