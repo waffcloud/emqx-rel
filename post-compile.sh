@@ -1,7 +1,7 @@
 #!/bin/bash -eu
 
 ## Build cuttlefish executable
-cd ${REBAR_BUILD_DIR}/lib/cuttlefish
+cd ${REBAR_DEPS_DIR}/cuttlefish
 make
 
 cd ${REBAR_BUILD_DIR}
